@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "module": "ES2022",
+        "module": "nodenext",
         "noImplicitAny": true,
         "removeComments": false,
         "strictNullChecks": true,
@@ -9,7 +9,8 @@
         "esModuleInterop": true,
         "outDir": "./build/",
         "sourceMap": true,
-        "moduleResolution": "node",
+        "moduleResolution": "nodenext",
+        "types": ["node"],
         "declaration": true,
     },
     "include": [
