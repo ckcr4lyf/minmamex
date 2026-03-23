@@ -1,3 +1,6 @@
+/**
+ * For auth, the cookies needed are `amexsessioncookie` & `aat`. Everything else can be omitted
+ */
 export const getAccountsList = async (cookies: string): Promise<string[]> => {
   const response = await fetch("https://global.americanexpress.com/rewards/summary", {
     headers: {
@@ -32,6 +35,16 @@ type LoyaltyTransactionParams = {
   periodIndex: number;
 }
 
+export type LoyaltyTransaction = {
+  type: 'BASE' | 'BONUS',
+  postedDate: string; // YYYY-MM-DD
+  rewardAmount: {
+    value: number;
+    currencyType: 'POINTS';
+  },
+  descriptions: string; // yes they use "plural" in their API schema...
+}
+
 type LoyaltyTransactionResponse = {
   metadata: {
     limit: number;
@@ -48,15 +61,7 @@ type LoyaltyTransactionResponse = {
     startDate: string; // YYYY-MM-DD
     endDate: string; // YYYY-MM-DD
   }[],
-  transactions: {
-    type: 'BASE' | 'BONUS',
-    postedDate: string; // YYYY-MM-DD
-    rewardAmount: {
-      value: number;
-      currencyType: 'POINTS';
-    },
-    descriptions: string; // yes they use "plural" in their API schema...
-  }[];
+  transactions: LoyaltyTransaction[];
 }
 
 const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactionParams): Promise<LoyaltyTransactionResponse> => {
@@ -87,10 +92,10 @@ const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactio
 export const getAllLoyaltyTransactionsForAccounts = async (
   cookies: string,
   accountToken: string
-): Promise<LoyaltyTransactionResponse["transactions"]> => {
+): Promise<LoyaltyTransaction[]> => {
   const limit = 500;
   let maxPeriodIndex = 0;
-  const allTransactions: LoyaltyTransactionResponse["transactions"] = [];
+  const allTransactions: LoyaltyTransaction[] = [];
 
   for (let periodIndex = 0; periodIndex <= maxPeriodIndex; periodIndex++) {
     let offset = 0;
