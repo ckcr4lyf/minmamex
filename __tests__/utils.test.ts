@@ -30,9 +30,9 @@ const transactions: LoyaltyTransaction[] = [
   { type: 'BONUS', postedDate: '2025-05-15', rewardAmount: { value: 35,  currencyType: 'POINTS' }, descriptions: 'Dining Bonus' },
 ];
 
-test('getQuarterlySummary returns one entry per quarter sorted chronologically', t => {
+test('getQuarterlySummary returns one entry per quarter sorted reverse chronologically', t => {
   const result = getQuarterlySummary(transactions);
-  t.deepEqual(result.map(r => r.quarter), ['2024-Q1', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2']);
+  t.deepEqual(result.map(r => r.quarter), ['2025-Q2', '2025-Q1', '2024-Q4', '2024-Q3', '2024-Q1']);
 });
 
 test('getQuarterlySummary totals are correct per quarter', t => {
@@ -43,25 +43,37 @@ test('getQuarterlySummary totals are correct per quarter', t => {
   // 2024-Q1: base=180, Welcome Bonus=70 (50+20), Dining Bonus=30
   t.is(q['2024-Q1'].totalPoints, 280);
   t.is(q['2024-Q1'].basePoints, 180);
-  t.deepEqual(q['2024-Q1'].bonusPoints, { 'Welcome Bonus': 70, 'Dining Bonus': 30 });
+  t.deepEqual(q['2024-Q1'].bonusPoints, {
+    'Welcome Bonus': { pointsEarned: 70 },
+    'Dining Bonus': { pointsEarned: 30 },
+  });
 
   // 2024-Q3: base=200, Travel Bonus=125 (75+50), Dining Bonus=45
   t.is(q['2024-Q3'].totalPoints, 370);
   t.is(q['2024-Q3'].basePoints, 200);
-  t.deepEqual(q['2024-Q3'].bonusPoints, { 'Travel Bonus': 125, 'Dining Bonus': 45 });
+  t.deepEqual(q['2024-Q3'].bonusPoints, {
+    'Travel Bonus': { pointsEarned: 125 },
+    'Dining Bonus': { pointsEarned: 45 },
+  });
 
   // 2024-Q4: base=300, Holiday Bonus=250 (150+100)
   t.is(q['2024-Q4'].totalPoints, 550);
   t.is(q['2024-Q4'].basePoints, 300);
-  t.deepEqual(q['2024-Q4'].bonusPoints, { 'Holiday Bonus': 250 });
+  t.deepEqual(q['2024-Q4'].bonusPoints, { 'Holiday Bonus': { pointsEarned: 250 } });
 
   // 2025-Q1: base=120, Welcome Bonus=60, Referral Bonus=80 (40+40)
   t.is(q['2025-Q1'].totalPoints, 260);
   t.is(q['2025-Q1'].basePoints, 120);
-  t.deepEqual(q['2025-Q1'].bonusPoints, { 'Welcome Bonus': 60, 'Referral Bonus': 80 });
+  t.deepEqual(q['2025-Q1'].bonusPoints, {
+    'Welcome Bonus': { pointsEarned: 60 },
+    'Referral Bonus': { pointsEarned: 80 },
+  });
 
   // 2025-Q2: base=80, Travel Bonus=100 (40+60), Dining Bonus=35
   t.is(q['2025-Q2'].totalPoints, 215);
   t.is(q['2025-Q2'].basePoints, 80);
-  t.deepEqual(q['2025-Q2'].bonusPoints, { 'Travel Bonus': 100, 'Dining Bonus': 35 });
+  t.deepEqual(q['2025-Q2'].bonusPoints, {
+    'Travel Bonus': { pointsEarned: 100 },
+    'Dining Bonus': { pointsEarned: 35 },
+  });
 });

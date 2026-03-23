@@ -4,7 +4,13 @@ export type QuarterlySummary = {
   quarter: string; // YYYY-QX
   totalPoints: number;
   basePoints: number;
-  bonusPoints: Record<string, number>; // key is the description, value is the points
+  bonusPoints: Record<string, BonusInfo>; // key is the description
+}
+
+type BonusInfo = {
+  pointsEarned: number;
+  pointsRemaining?: number;
+  spendRemaining?: number;
 }
 
 const quarterFromDate = (postedDate: string): string => {
@@ -28,9 +34,11 @@ export const getQuarterlySummary = (transactions: LoyaltyTransaction[]): Quarter
     if (tx.type === "BASE") {
       summary.basePoints += points;
     } else {
-      summary.bonusPoints[tx.descriptions] = (summary.bonusPoints[tx.descriptions] ?? 0) + points;
+      const desc = tx.descriptions;
+      const prev = summary.bonusPoints[desc]?.pointsEarned ?? 0;
+      summary.bonusPoints[desc] = { pointsEarned: prev + points };
     }
   }
 
-  return Array.from(map.values()).sort((a, b) => a.quarter.localeCompare(b.quarter));
+  return Array.from(map.values()).sort((a, b) => b.quarter.localeCompare(a.quarter));
 };
