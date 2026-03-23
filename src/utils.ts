@@ -23,11 +23,15 @@ const KNOWN_MAX_BONUS: Record<string, MaxBonus> = {
     maxBonus: 70000,
     rate: 7,
   },
+  "Explorer 7X Airline 2026": {
+    maxBonus: 70000,
+    rate: 7,
+  },
   "Explorer 7X Airlines max 70000 points per quarter": {
     maxBonus: 70000,
     rate: 7,
   },
-  "Explorer 7x foreign spend  bonus upto max 70000 points": {
+  "Explorer 7x foreign spend bonus upto max 70000 points": {
     maxBonus: 70000,
     rate: 7,
   },
