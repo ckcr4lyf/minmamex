@@ -83,3 +83,42 @@ const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactio
 
   return response.json();
 }
+
+export const getAllLoyaltyTransactionsForAccounts = async (
+  cookies: string,
+  accountToken: string
+): Promise<LoyaltyTransactionResponse["transactions"]> => {
+  const limit = 500;
+  let maxPeriodIndex = 0;
+  const allTransactions: LoyaltyTransactionResponse["transactions"] = [];
+
+  for (let periodIndex = 0; periodIndex <= maxPeriodIndex; periodIndex++) {
+    let offset = 0;
+
+    for (;;) {
+      const res = await getLoyaltyTransactions(cookies, {
+        accountToken,
+        offset,
+        limit,
+        periodIndex,
+      });
+
+      if (periodIndex === 0 && res.periods.length > 0) {
+        maxPeriodIndex = Math.max(...res.periods.map((p) => p.periodIndex));
+      }
+
+      allTransactions.push(...res.transactions);
+
+      const { metadata } = res;
+      if (res.transactions.length === 0) {
+        break;
+      }
+      if (offset + res.transactions.length >= metadata.totalRecords) {
+        break;
+      }
+      offset += limit;
+    }
+  }
+
+  return allTransactions;
+};
