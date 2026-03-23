@@ -13,7 +13,8 @@
     "url": "git+https://github.com/ckcr4lyf/minmamex.git"
   },
   "keywords": [
-    "amex", "rewards"
+    "amex",
+    "rewards"
   ],
   "author": "Raghu Saxena",
   "license": "GPL-3.0",
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/ckcr4lyf/minmamex#readme",
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
+    "@types/node": "^25.5.0",
     "ava": "^5.1.0",
     "typescript": "^4.9.4"
   },
