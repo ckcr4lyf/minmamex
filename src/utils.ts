@@ -54,7 +54,8 @@ const KNOWN_MAX_BONUS: Record<string, MaxBonus> = {
 };
 
 const buildBonusInfo = (description: string, pointsEarned: number): BonusInfo => {
-  const maxBonusInfo = KNOWN_MAX_BONUS[description];
+  const normalizedDescription = description.replace(/\s+/g, " ").trim();
+  const maxBonusInfo = KNOWN_MAX_BONUS[normalizedDescription];
   if (!maxBonusInfo) {
     return { pointsEarned };
   }
