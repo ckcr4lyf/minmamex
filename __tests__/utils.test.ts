@@ -77,3 +77,26 @@ test('getQuarterlySummary totals are correct per quarter', t => {
     'Dining Bonus': { pointsEarned: 35 },
   });
 });
+
+test('getQuarterlySummary sets remaining fields for known capped bonuses', t => {
+  const result = getQuarterlySummary([
+    {
+      type: 'BONUS',
+      postedDate: '2025-04-12',
+      rewardAmount: { value: 5000, currencyType: 'POINTS' },
+      descriptions: 'Platinum Accelerator 2025 Travel',
+    },
+    {
+      type: 'BONUS',
+      postedDate: '2025-04-30',
+      rewardAmount: { value: 5000, currencyType: 'POINTS' },
+      descriptions: 'Platinum Accelerator 2025 Travel',
+    },
+  ]);
+
+  t.deepEqual(result[0].bonusPoints['Platinum Accelerator 2025 Travel'], {
+    pointsEarned: 10000,
+    pointsRemaining: 65000,
+    spendRemaining: 13000,
+  });
+});

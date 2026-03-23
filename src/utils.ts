@@ -13,6 +13,56 @@ type BonusInfo = {
   spendRemaining?: number;
 }
 
+type MaxBonus = {
+  maxBonus: number; // max bonus points that can be earned in this category
+  rate: number; // points per $1 spent for this category
+}
+
+const KNOWN_MAX_BONUS: Record<string, MaxBonus> = {
+  "2026 Explorer 7X": {
+    maxBonus: 70000,
+    rate: 7,
+  },
+  "Explorer 7X Airlines max 70000 points per quarter": {
+    maxBonus: 70000,
+    rate: 7,
+  },
+  "Explorer 7x foreign spend  bonus upto max 70000 points": {
+    maxBonus: 70000,
+    rate: 7,
+  },
+  "Additional HK$1=7 point in the first\r\nHK$10K FX per quarter": {
+    maxBonus: 70000,
+    rate: 7,
+  },
+  "Platinum Accelerator 2025 Travel": {
+    maxBonus: 75000,
+    rate: 5,
+  },
+  "Platinum Accelerator 2025 Foreign Currency": {
+    maxBonus: 105000,
+    rate: 7,
+  },
+  "Platinum Accelerator 2025 Everyday Spend": {
+    maxBonus: 105000,
+    rate: 7,
+  },
+};
+
+const buildBonusInfo = (description: string, pointsEarned: number): BonusInfo => {
+  const maxBonusInfo = KNOWN_MAX_BONUS[description];
+  if (!maxBonusInfo) {
+    return { pointsEarned };
+  }
+
+  const pointsRemaining = Math.max(maxBonusInfo.maxBonus - pointsEarned, 0);
+  return {
+    pointsEarned,
+    pointsRemaining,
+    spendRemaining: pointsRemaining / maxBonusInfo.rate,
+  };
+};
+
 const quarterFromDate = (postedDate: string): string => {
   const [year, month] = postedDate.split("-").map(Number);
   const q = Math.ceil(month / 3);
@@ -36,7 +86,7 @@ export const getQuarterlySummary = (transactions: LoyaltyTransaction[]): Quarter
     } else {
       const desc = tx.descriptions;
       const prev = summary.bonusPoints[desc]?.pointsEarned ?? 0;
-      summary.bonusPoints[desc] = { pointsEarned: prev + points };
+      summary.bonusPoints[desc] = buildBonusInfo(desc, prev + points);
     }
   }
 
