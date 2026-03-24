@@ -4,17 +4,30 @@ Helping minmax AMEX rewards
 
 ## Running locally
 
-Currently in testing mode, there is a hacky way to run it locally and dump details to stdout:
+First clone the repo and install dependencies:
 
 ```
-git clone <fixme>
+git clone https://github.com/ckcr4lyf/minmamex.git
 cd minmamex
 npm i
 npm run build
-node build/src/bin.js 'cookie string'
 ```
 
-## Obtaining cookies
+### With username and password
+
+This method is recommended since it is handles the auth and cookies
+
+Currently in testing mode, there is a hacky way to run it locally and dump details to stdout:
+
+```
+read -sp "Enter Username: " AMEX_USER
+read -sp "Enter Password: " AMEX_PASSWORD
+node build/src/bin.js -u "$AMEX_USER" -p "$AMEX_PASSWORD"
+```
+
+### Via cookies
+
+First, obtain the cookies:
 
 1. [Log into your AMEX account in a browser](https://www.americanexpress.com/en-hk/account/login?inav=hk_utility_login).
 2. Open devtools (e.g. F12 or Ctrl+Shift+I). 
@@ -41,6 +54,11 @@ curl 'https://www.americanexpress.com/en-hk/rewards/membership-rewards/' \
 ```
 
 ^ in this example, `'agent-id=8525e894-5c17-4889-....[REDACTED]'` is the string
+
+Then you can run:
+```
+node build/src/bin.js -c "cookie_string"
+```
 
 ## Contributing
 
