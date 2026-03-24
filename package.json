@@ -39,5 +39,8 @@
       },
       "compile": false
     }
+  },
+  "dependencies": {
+    "puppeteer": "^24.40.0"
   }
 }
