@@ -71,14 +71,19 @@ const parsed = parseArgs(process.argv.slice(2));
 
 let cookies: string;
 if (parsed.mode === "login") {
+  console.log("Logging in...");
   cookies = await loginAmexHongKong(parsed.username, parsed.password);
+  console.log("Logged in successfully");
+  console.log(`Cookies: ${cookies}`);
 } else {
   cookies = parsed.cookies;
 }
 
 try {
+  console.log("Getting accounts list...");
   const accounts = await getAccountsList(cookies);
   for (const accountToken of accounts) {
+    console.log(`Getting transactions for account: ${accountToken}`);
     const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken);
     const quarterlySummary = getQuarterlySummary(transactions);
     console.log(`Account: ${accountToken}`);
