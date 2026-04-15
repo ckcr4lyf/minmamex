@@ -3,8 +3,11 @@ import { randomBytes, randomUUID } from "node:crypto";
 
 import { getAccountsList, getAllLoyaltyTransactionsForAccounts } from "./api.js";
 import { loginAmexHongKong } from "./auth.js";
+import { getLogger } from "./logger.js";
 import { Job, JobStatus } from "./db.js";
 import { getQuarterlySummary } from "./utils.js";
+
+const LOG = getLogger();
 
 const app = express();
 app.use(express.json());
@@ -22,6 +25,8 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
     return;
   }
 
+  LOG.info(`Job ${jobId}: Starting scrape job...`);
+
   jobs.set(jobId, {
     ...existingJob,
     status: JobStatus.RUNNING,
@@ -29,8 +34,13 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
   });
 
   try {
+    LOG.debug(`Job ${jobId}: Logging in...`);
     const cookies = await loginAmexHongKong(username, password);
+    LOG.debug(`Job ${jobId}: Login successful.`);
+
+    LOG.debug(`Job ${jobId}: Fetching accounts...`);
     const accounts = await getAccountsList(cookies);
+    LOG.debug(`Job ${jobId}: Found ${accounts.length} accounts.`);
 
     const accountResults: NonNullable<Job["results"]> = [];
     for (const accountToken of accounts) {
@@ -52,6 +62,7 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
       status: JobStatus.COMPLETED,
       results: accountResults,
     });
+    LOG.info(`Job ${jobId}: Completed successfully with ${accountResults.length} account results.`);
   } catch (error) {
     const refreshedJob = jobs.get(jobId);
     if (!refreshedJob) {
@@ -64,6 +75,7 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
       status: JobStatus.FAILED,
       error: errorMessage,
     });
+    LOG.error(`Job ${jobId}: Failed - ${errorMessage}`);
   }
 };
 
@@ -89,6 +101,7 @@ app.post("/scrape_rewards", (req, res) => {
   };
 
   jobs.set(id, job);
+  LOG.info(`New scrape job created: ${id}`);
   res.json({ id, secret });
 
   void runScrapeJob(id, username, password);
@@ -126,5 +139,5 @@ app.get("/scrape_results", (req, res) => {
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  LOG.info(`Server listening on port ${port}`);
 });

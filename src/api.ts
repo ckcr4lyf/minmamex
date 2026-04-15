@@ -1,7 +1,12 @@
+import { getLogger } from "./logger.js";
+
+const LOG = getLogger();
+
 /**
  * For auth, the cookies needed are `amexsessioncookie` & `aat`. Everything else can be omitted
  */
 export const getAccountsList = async (cookies: string): Promise<string[]> => {
+  LOG.debug("Fetching accounts list...");
   const response = await fetch("https://global.americanexpress.com/rewards/summary", {
     headers: {
       "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -25,6 +30,7 @@ export const getAccountsList = async (cookies: string): Promise<string[]> => {
   }
 
   const accounts = JSON.parse(match[1].replaceAll(`\\`, ""));
+  LOG.debug(`Found ${accounts.length} accounts.`);
   return accounts;
 }
 
@@ -93,6 +99,7 @@ export const getAllLoyaltyTransactionsForAccounts = async (
   cookies: string,
   accountToken: string
 ): Promise<LoyaltyTransaction[]> => {
+  LOG.debug(`Fetching transactions for account: ${accountToken}...`);
   const limit = 500;
   let maxPeriodIndex = 0;
   const allTransactions: LoyaltyTransaction[] = [];
@@ -113,6 +120,7 @@ export const getAllLoyaltyTransactionsForAccounts = async (
       }
 
       allTransactions.push(...res.transactions);
+      LOG.debug(`Period ${periodIndex}: fetched ${res.transactions.length} transactions (total: ${allTransactions.length})`);
 
       const { metadata } = res;
       if (res.transactions.length === 0) {
@@ -125,5 +133,6 @@ export const getAllLoyaltyTransactionsForAccounts = async (
     }
   }
 
+  LOG.debug(`Completed fetching ${allTransactions.length} transactions for account: ${accountToken}`);
   return allTransactions;
 };

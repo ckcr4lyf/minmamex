@@ -1,6 +1,9 @@
 import { getAccountsList, getAllLoyaltyTransactionsForAccounts } from "./api.js";
 import { loginAmexHongKong } from "./auth.js";
+import { getLogger } from "./logger.js";
 import { getQuarterlySummary } from "./utils.js";
+
+const LOG = getLogger();
 
 function printUsage(): void {
   console.error(
@@ -71,26 +74,24 @@ const parsed = parseArgs(process.argv.slice(2));
 
 let cookies: string;
 if (parsed.mode === "login") {
-  console.log("Logging in...");
+  LOG.info("Logging in...");
   cookies = await loginAmexHongKong(parsed.username, parsed.password);
-  console.log("Logged in successfully");
-  console.log(`Cookies: ${cookies}`);
+  LOG.info("Login successful.");
 } else {
   cookies = parsed.cookies;
 }
 
 try {
-  console.log("Getting accounts list...");
+  LOG.info("Fetching accounts...");
   const accounts = await getAccountsList(cookies);
+  LOG.info(`Found ${accounts.length} accounts.`);
   for (const accountToken of accounts) {
-    console.log(`Getting transactions for account: ${accountToken}`);
     const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken);
     const quarterlySummary = getQuarterlySummary(transactions);
-    console.log(`Account: ${accountToken}`);
-    console.log(JSON.stringify(quarterlySummary, null, 2));
-    console.log("");
+    LOG.info(`Account ${accountToken}: ${transactions.length} transactions, ${quarterlySummary.length} quarterly periods.`);
   }
+  LOG.info("All done!");
 } catch (err) {
-  console.error(err instanceof Error ? err.message : err);
+  LOG.error(`Error: ${err instanceof Error ? err.message : err}`);
   process.exit(1);
 }
