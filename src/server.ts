@@ -138,6 +138,10 @@ app.get("/scrape_results", (req, res) => {
 });
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
-app.listen(port, () => {
+app.listen(port, (err) => {
+  if (err) {
+    LOG.error(`Failed to bind to port ${port}: ${err}`);
+    process.exit(1);
+  }
   LOG.info(`Server listening on port ${port}`);
 });
