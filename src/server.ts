@@ -42,14 +42,15 @@ const runScrapeJob = async (jobId: string, username: string, password: string, d
     LOG.debug(`Job ${jobId}: Login successful.`);
 
     LOG.debug(`Job ${jobId}: Fetching accounts...`);
-    const accounts = await getAccountsList(cookies, debugDir);
-    LOG.debug(`Job ${jobId}: Found ${accounts.length} accounts.`);
+    const cards = await getAccountsList(cookies, debugDir);
+    LOG.debug(`Job ${jobId}: Found ${cards.length} accounts.`);
 
     const accountResults: NonNullable<Job["results"]> = [];
-    for (const accountToken of accounts) {
-      const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken, debugDir);
+    for (const card of cards) {
+      const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, card.id, debugDir);
       accountResults.push({
-        accountToken,
+        accountToken: card.id,
+        cardName: card.name,
         transactions,
         quarterlySummary: getQuarterlySummary(transactions),
       });

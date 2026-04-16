@@ -16,6 +16,7 @@ export type Job = {
   error?: string;
   results?: {
     accountToken: string;
+    cardName: string;
     transactions: LoyaltyTransaction[];
     quarterlySummary: QuarterlySummary[];
   }[];

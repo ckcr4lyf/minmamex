@@ -1,13 +1,15 @@
 import { getLogger } from "./logger.js";
 import { saveDebugFile } from "./debug.js";
-import { extractCardsFromHtml } from "./extract.js";
+import { extractCardsFromHtml, CardInfo } from "./extract.js";
 
 const LOG = getLogger();
+
+export type { CardInfo };
 
 /**
  * For auth, the cookies needed are `amexsessioncookie` & `aat`. Everything else can be omitted
  */
-export const getAccountsList = async (cookies: string, debugDir?: string): Promise<string[]> => {
+export const getAccountsList = async (cookies: string, debugDir?: string): Promise<CardInfo[]> => {
   LOG.debug("Fetching accounts list...");
   const response = await fetch("https://global.americanexpress.com/rewards/summary", {
     headers: {
@@ -35,9 +37,8 @@ export const getAccountsList = async (cookies: string, debugDir?: string): Promi
     throw new Error("Failed to extract accounts list from HTML");
   }
 
-  const accounts = cards.map(card => card.id);
-  LOG.debug(`Found ${accounts.length} accounts.`);
-  return accounts;
+  LOG.debug(`Found ${cards.length} accounts.`);
+  return cards;
 }
 
 type LoyaltyTransactionParams = {

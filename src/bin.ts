@@ -83,12 +83,12 @@ if (parsed.mode === "login") {
 
 try {
   LOG.info("Fetching accounts...");
-  const accounts = await getAccountsList(cookies);
-  LOG.info(`Found ${accounts.length} accounts.`);
-  for (const accountToken of accounts) {
-    const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken);
+  const cards = await getAccountsList(cookies);
+  LOG.info(`Found ${cards.length} accounts.`);
+  for (const card of cards) {
+    const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, card.id);
     const quarterlySummary = getQuarterlySummary(transactions);
-    LOG.info(`Account ${accountToken}: ${transactions.length} transactions, ${quarterlySummary.length} quarterly periods.`);
+    LOG.info(`${card.name} (${card.id}): ${transactions.length} transactions, ${quarterlySummary.length} quarterly periods.`);
   }
   LOG.info("All done!");
 } catch (err) {
