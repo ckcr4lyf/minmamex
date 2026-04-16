@@ -114,6 +114,7 @@ app.post("/scrape_rewards", (req, res) => {
 app.get("/scrape_results", (req, res) => {
   const id = req.query.id;
   const secret = req.query.secret;
+  const includeTransactions = req.query.includeTransactions === "true";
   if (typeof id !== "string" || typeof secret !== "string") {
     res.status(400).json({ error: "id and secret are required" });
     return;
@@ -134,10 +135,15 @@ app.get("/scrape_results", (req, res) => {
     return;
   }
 
+  const results = job.results?.map(r => includeTransactions
+    ? r
+    : { accountToken: r.accountToken, cardName: r.cardName, quarterlySummary: r.quarterlySummary }
+  );
+
   res.json({
     id: job.id,
     status: job.status,
-    results: job.results,
+    results,
   });
 });
 
