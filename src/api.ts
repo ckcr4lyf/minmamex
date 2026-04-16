@@ -1,11 +1,12 @@
 import { getLogger } from "./logger.js";
+import { saveDebugFile } from "./debug.js";
 
 const LOG = getLogger();
 
 /**
  * For auth, the cookies needed are `amexsessioncookie` & `aat`. Everything else can be omitted
  */
-export const getAccountsList = async (cookies: string): Promise<string[]> => {
+export const getAccountsList = async (cookies: string, debugDir?: string): Promise<string[]> => {
   LOG.debug("Fetching accounts list...");
   const response = await fetch("https://global.americanexpress.com/rewards/summary", {
     headers: {
@@ -22,6 +23,11 @@ export const getAccountsList = async (cookies: string): Promise<string[]> => {
   }
 
   const html = await response.text();
+
+  if (debugDir) {
+    await saveDebugFile(debugDir, "accounts_html", html, "html");
+  }
+
   const regex = new RegExp(/\\\"productsOrder\\\",(\[[^\]]+\])/);
   const match = html.match(regex);
 
@@ -70,7 +76,11 @@ type LoyaltyTransactionResponse = {
   transactions: LoyaltyTransaction[];
 }
 
-const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactionParams): Promise<LoyaltyTransactionResponse> => {
+const getLoyaltyTransactions = async (
+  cookies: string,
+  params: LoyaltyTransactionParams,
+  debugDir?: string
+): Promise<LoyaltyTransactionResponse> => {
   const response = await fetch("https://functions.americanexpress.com/ReadLoyaltyTransactions.v1", {
     headers: {
       "accept": "application/json",
@@ -81,7 +91,6 @@ const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactio
     method: "POST",
     body: JSON.stringify({
       ...params,
-      // Below are hardcoded, not sure if they need to change
       periodType: "CALENDAR_PERIOD",
       transactionsFor: "LOYALTY_ACCOUNT",
       productType: "AEXP_CARD_ACCOUNT",
@@ -92,17 +101,26 @@ const getLoyaltyTransactions = async (cookies: string, params: LoyaltyTransactio
     throw new Error(`Failed to fetch loyalty transactions: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+
+  if (debugDir) {
+    const filename = `transactions_p${params.periodIndex}_o${params.offset}`;
+    await saveDebugFile(debugDir, filename, data);
+  }
+
+  return data;
 }
 
 export const getAllLoyaltyTransactionsForAccounts = async (
   cookies: string,
-  accountToken: string
+  accountToken: string,
+  debugDir?: string
 ): Promise<LoyaltyTransaction[]> => {
   LOG.debug(`Fetching transactions for account: ${accountToken}...`);
   const limit = 500;
   let maxPeriodIndex = 0;
   const allTransactions: LoyaltyTransaction[] = [];
+  const accountDebugDir = debugDir ? `${debugDir}/${accountToken}` : undefined;
 
   for (let periodIndex = 0; periodIndex <= maxPeriodIndex; periodIndex++) {
     let offset = 0;
@@ -113,7 +131,7 @@ export const getAllLoyaltyTransactionsForAccounts = async (
         offset,
         limit,
         periodIndex,
-      });
+      }, accountDebugDir);
 
       if (periodIndex === 0 && res.periods.length > 0) {
         maxPeriodIndex = Math.max(...res.periods.map((p) => p.periodIndex));

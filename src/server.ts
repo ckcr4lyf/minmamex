@@ -17,9 +17,10 @@ const jobs = new Map<string, Job>();
 type ScrapeRewardsBody = {
   username?: string;
   password?: string;
+  debug?: boolean;
 };
 
-const runScrapeJob = async (jobId: string, username: string, password: string): Promise<void> => {
+const runScrapeJob = async (jobId: string, username: string, password: string, debug?: boolean): Promise<void> => {
   const existingJob = jobs.get(jobId);
   if (!existingJob) {
     return;
@@ -33,18 +34,20 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
     error: undefined,
   });
 
+  const debugDir = debug ? `./debug_raw/${jobId}` : undefined;
+
   try {
     LOG.debug(`Job ${jobId}: Logging in...`);
     const cookies = await loginAmexHongKong(username, password);
     LOG.debug(`Job ${jobId}: Login successful.`);
 
     LOG.debug(`Job ${jobId}: Fetching accounts...`);
-    const accounts = await getAccountsList(cookies);
+    const accounts = await getAccountsList(cookies, debugDir);
     LOG.debug(`Job ${jobId}: Found ${accounts.length} accounts.`);
 
     const accountResults: NonNullable<Job["results"]> = [];
     for (const accountToken of accounts) {
-      const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken);
+      const transactions = await getAllLoyaltyTransactionsForAccounts(cookies, accountToken, debugDir);
       accountResults.push({
         accountToken,
         transactions,
@@ -80,7 +83,7 @@ const runScrapeJob = async (jobId: string, username: string, password: string): 
 };
 
 app.post("/scrape_rewards", (req, res) => {
-  const { username, password } = req.body as ScrapeRewardsBody;
+  const { username, password, debug } = req.body as ScrapeRewardsBody;
 
   if (typeof username !== "string" || username.length === 0) {
     res.status(400).json({ error: "username is required" });
@@ -104,7 +107,7 @@ app.post("/scrape_rewards", (req, res) => {
   LOG.info(`New scrape job created: ${id}`);
   res.json({ id, secret });
 
-  void runScrapeJob(id, username, password);
+  void runScrapeJob(id, username, password, debug);
 });
 
 app.get("/scrape_results", (req, res) => {
