@@ -1,5 +1,6 @@
 import { getLogger } from "./logger.js";
 import { saveDebugFile } from "./debug.js";
+import { extractCardsFromHtml } from "./extract.js";
 
 const LOG = getLogger();
 
@@ -28,14 +29,13 @@ export const getAccountsList = async (cookies: string, debugDir?: string): Promi
     await saveDebugFile(debugDir, "accounts_html", html, "html");
   }
 
-  const regex = new RegExp(/\\\"productsOrder\\\",(\[[^\]]+\])/);
-  const match = html.match(regex);
+  const cards = extractCardsFromHtml(html);
 
-  if (!match) {
+  if (cards.length === 0) {
     throw new Error("Failed to extract accounts list from HTML");
   }
 
-  const accounts = JSON.parse(match[1].replaceAll(`\\`, ""));
+  const accounts = cards.map(card => card.id);
   LOG.debug(`Found ${accounts.length} accounts.`);
   return accounts;
 }
