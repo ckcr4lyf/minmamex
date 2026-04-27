@@ -24,6 +24,7 @@
   "homepage": "https://github.com/ckcr4lyf/minmamex#readme",
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "ava": "^5.1.0",
@@ -43,6 +44,7 @@
   },
   "dependencies": {
     "@ckcr4lyf/logger": "^0.0.7",
+    "cors": "^2.8.5",
     "express": "^5.2.1",
     "puppeteer": "^24.40.0"
   }

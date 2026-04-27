@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { randomBytes, randomUUID } from "node:crypto";
 
 import { getAccountsList, getAllLoyaltyTransactionsForAccounts } from "./api.js";
@@ -10,6 +11,7 @@ import { getQuarterlySummary } from "./utils.js";
 const LOG = getLogger();
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const jobs = new Map<string, Job>();
