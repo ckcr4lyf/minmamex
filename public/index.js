@@ -7,9 +7,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const password = document.getElementById('password').value;
     const debug = document.getElementById('debug').checked;
 
+    const jobIdContainer = document.getElementById('jobIdContainer');
     const statusContainer = document.getElementById('statusContainer');
     const resultsContainer = document.getElementById('resultsContainer');
 
+    jobIdContainer.innerHTML = '';
     statusContainer.innerHTML = '<b>Status: Submitting...</b>';
     resultsContainer.innerHTML = '';
 
@@ -31,6 +33,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
 
         const { id, secret } = await response.json();
+
+        jobIdContainer.innerHTML = `<b>Job ID: ${id}</b>`;
 
         pollResults(id, secret);
     } catch (error) {
@@ -93,11 +97,14 @@ function displayResults(results) {
 
             for (const [bonusName, bonusData] of Object.entries(quarter.bonusPoints || {})) {
                 const bonusRow = document.createElement('tr');
+                const spendRemaining = bonusData.spendRemaining != null
+                    ? `$${Number(bonusData.spendRemaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : '';
                 bonusRow.innerHTML = `
                     <td>${bonusName}</td>
                     <td>${bonusData.pointsEarned ?? ''}</td>
                     <td>${bonusData.pointsRemaining ?? ''}</td>
-                    <td>${bonusData.spendRemaining ?? ''}</td>
+                    <td>${spendRemaining}</td>
                 `;
                 table.appendChild(bonusRow);
             }
