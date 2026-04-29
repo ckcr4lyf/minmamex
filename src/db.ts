@@ -2,8 +2,8 @@ import { LoyaltyTransaction } from "./api.js";
 import { QuarterlySummary } from "./utils.js";
 
 export enum JobStatus {
-  PENDING = "PENDING",
-  RUNNING = "RUNNING",
+  AUTHENTICATING = "AUTHENTICATING",
+  RETRIEVING_DATA = "RETRIEVING_DATA",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
 }

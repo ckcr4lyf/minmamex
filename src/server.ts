@@ -32,7 +32,7 @@ const runScrapeJob = async (jobId: string, username: string, password: string, d
 
   jobs.set(jobId, {
     ...existingJob,
-    status: JobStatus.RUNNING,
+    status: JobStatus.AUTHENTICATING,
     error: undefined,
   });
 
@@ -42,6 +42,11 @@ const runScrapeJob = async (jobId: string, username: string, password: string, d
     LOG.debug(`Job ${jobId}: Logging in...`);
     const cookies = await loginAmexHongKong(username, password);
     LOG.debug(`Job ${jobId}: Login successful.`);
+
+    jobs.set(jobId, {
+      ...jobs.get(jobId)!,
+      status: JobStatus.RETRIEVING_DATA,
+    });
 
     LOG.debug(`Job ${jobId}: Fetching accounts...`);
     const cards = await getAccountsList(cookies, debugDir);
@@ -102,7 +107,7 @@ app.post("/scrape_rewards", (req, res) => {
   const job: Job = {
     id,
     secret,
-    status: JobStatus.PENDING,
+    status: JobStatus.AUTHENTICATING,
     createdAt: new Date(),
   };
 
@@ -128,7 +133,7 @@ app.get("/scrape_results", (req, res) => {
     return;
   }
 
-  if (job.status === JobStatus.PENDING || job.status === JobStatus.RUNNING || job.status === JobStatus.FAILED) {
+  if (job.status === JobStatus.AUTHENTICATING || job.status === JobStatus.RETRIEVING_DATA || job.status === JobStatus.FAILED) {
     res.json({
       id: job.id,
       status: job.status,
