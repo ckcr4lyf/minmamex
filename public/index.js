@@ -1,5 +1,28 @@
 const API_HOST = 'http://127.0.0.1:3434';
 
+function setStatus(message) {
+    document.getElementById('statusText').innerHTML = `<b>Status: ${message}</b>`;
+}
+
+let spinnerInterval = null;
+const spinnerFrames = ['|', '/', '-', '\\'];
+let spinnerIndex = 0;
+
+function startSpinner() {
+    if (spinnerInterval) return;
+    document.getElementById('spinner').innerHTML = ' ';
+    spinnerInterval = setInterval(() => {
+        document.getElementById('spinner').innerHTML = ' ' + spinnerFrames[spinnerIndex];
+        spinnerIndex = (spinnerIndex + 1) % spinnerFrames.length;
+    }, 100);
+}
+
+function stopSpinner() {
+    clearInterval(spinnerInterval);
+    spinnerInterval = null;
+    document.getElementById('spinner').innerHTML = '';
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -8,11 +31,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const debug = document.getElementById('debug').checked;
 
     const jobIdContainer = document.getElementById('jobIdContainer');
-    const statusContainer = document.getElementById('statusContainer');
     const resultsContainer = document.getElementById('resultsContainer');
 
     jobIdContainer.innerHTML = '';
-    statusContainer.innerHTML = '<b>Status: Submitting...</b>';
+    setStatus('Submitting...');
+    stopSpinner();
     resultsContainer.innerHTML = '';
 
     try {
@@ -38,14 +61,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         pollResults(id, secret);
     } catch (error) {
-        statusContainer.innerHTML = `<b>Error: ${error.message}</b>`;
+        setStatus(`Error: ${error.message}`);
+        stopSpinner();
     }
 });
 
 async function pollResults(id, secret) {
-    const statusContainer = document.getElementById('statusContainer');
     const resultsContainer = document.getElementById('resultsContainer');
 
+    let data;
     const poll = async () => {
         try {
             const response = await fetch(
@@ -56,17 +80,23 @@ async function pollResults(id, secret) {
                 throw new Error('Failed to fetch results');
             }
 
-            const data = await response.json();
+            data = await response.json();
 
-            statusContainer.innerHTML = `<b>Status: ${data.status}</b>`;
-
-            if (data.status === 'COMPLETED' && data.results) {
-                displayResults(data.results);
-            } else if (data.status !== 'COMPLETED') {
+            if (data.status === 'AUTHENTICATING' || data.status === 'RETRIEVING_DATA') {
+                setStatus(data.status);
+                startSpinner();
                 setTimeout(poll, 2000);
+            } else if (data.status === 'COMPLETED' && data.results) {
+                stopSpinner();
+                setStatus(data.status);
+                displayResults(data.results);
+            } else {
+                stopSpinner();
+                setStatus(data.status);
             }
         } catch (error) {
-            statusContainer.innerHTML = `<b>Error: ${error.message}</b>`;
+            stopSpinner();
+            setStatus(`Error: ${error.message}`);
         }
     };
 
