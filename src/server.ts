@@ -13,6 +13,13 @@ import { getQuarterlySummary } from "./utils.js";
 const LOG = getLogger();
 
 const app = express();
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    LOG.info(`${req.ip} ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+  });
+  next();
+});
 app.use(cors());
 app.use(express.json());
 
