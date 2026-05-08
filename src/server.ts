@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { createServer } from "node:https";
 import express from "express";
 import cors from "cors";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -154,11 +156,29 @@ app.get("/scrape_results", (req, res) => {
   });
 });
 
+const args = process.argv.slice(2);
+const tlsKeyArg = args.indexOf("--tls-key");
+const tlsCertArg = args.indexOf("--tls-cert");
+const tlsKeyPath = tlsKeyArg !== -1 ? args[tlsKeyArg + 1] : undefined;
+const tlsCertPath = tlsCertArg !== -1 ? args[tlsCertArg + 1] : undefined;
+
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
-app.listen(port, (err) => {
-  if (err) {
-    LOG.error(`Failed to bind to port ${port}: ${err}`);
-    process.exit(1);
-  }
-  LOG.info(`Server listening on port ${port}`);
-});
+
+if (tlsKeyPath && tlsCertPath) {
+  const tlsOptions = {
+    key: readFileSync(tlsKeyPath),
+    cert: readFileSync(tlsCertPath),
+  };
+  const server = createServer(tlsOptions, app);
+  server.listen(port, () => {
+    LOG.info(`Server listening on port ${port} (TLS)`);
+  });
+} else {
+  app.listen(port, (err) => {
+    if (err) {
+      LOG.error(`Failed to bind to port ${port}: ${err}`);
+      process.exit(1);
+    }
+    LOG.info(`Server listening on port ${port}`);
+  });
+}
