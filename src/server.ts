@@ -16,7 +16,7 @@ const app = express();
 app.use((req, res, next) => {
   const start = Date.now();
   res.on("finish", () => {
-    LOG.info(`${req.ip} ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+    LOG.info(`${(req.ip ?? "").replace(/^::ffff:/, "")} ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
   });
   next();
 });
