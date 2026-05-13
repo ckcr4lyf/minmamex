@@ -9,6 +9,7 @@ import { loginAmexHongKong } from "./auth.js";
 import { getLogger } from "./logger.js";
 import { Job, JobStatus } from "./db.js";
 import { getQuarterlySummary } from "./utils.js";
+import { checkRateLimit, getQuota } from "./quota.js";
 
 const LOG = getLogger();
 
@@ -100,6 +101,17 @@ const runScrapeJob = async (jobId: string, username: string, password: string, d
 };
 
 app.post("/scrape_rewards", (req, res) => {
+  const ip = (req.ip ?? "").replace(/^::ffff:/, "");
+  const limit = checkRateLimit(ip);
+  if (!limit.allowed) {
+    res.status(429).json({
+      error: "rate limit exceeded",
+      globalRemaining: limit.globalRemaining,
+      ipRemaining: limit.ipRemaining,
+    });
+    return;
+  }
+
   const { username, password, debug } = req.body as ScrapeRewardsBody;
 
   if (typeof username !== "string" || username.length === 0) {
@@ -161,6 +173,11 @@ app.get("/scrape_results", (req, res) => {
     status: job.status,
     results,
   });
+});
+
+app.get("/quota", (req, res) => {
+  const ip = (req.ip ?? "").replace(/^::ffff:/, "");
+  res.json(getQuota(ip));
 });
 
 const args = process.argv.slice(2);
