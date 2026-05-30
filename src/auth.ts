@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import { getLogger } from "./logger.js";
+import { saveDebugFile, saveDebugScreenshot } from "./debug.js";
 
 const LOG = getLogger();
 const LOGIN_URL =
@@ -8,6 +9,13 @@ const LOGIN_URL =
 /** Names required by `api.ts` (`Cookie` header). */
 const REQUIRED_COOKIES = ["amexsessioncookie", "aat"] as const;
 
+const debugCapture = async (page: puppeteer.Page, debugDir: string, step: string) => {
+  const screenshot = await page.screenshot({ fullPage: true });
+  await saveDebugScreenshot(debugDir, `login_${step}`, Buffer.from(screenshot));
+  const html = await page.content();
+  await saveDebugFile(debugDir, `login_${step}`, html, "html");
+};
+
 /**
  * Logs in on Amex HK, waits until `amexsessioncookie` and `aat` are stored,
  * then returns a `Cookie` header value suitable for `api.ts`.
@@ -15,35 +23,45 @@ const REQUIRED_COOKIES = ["amexsessioncookie", "aat"] as const;
 export async function loginAmexHongKong(
   username: string,
   password: string,
+  debugDir?: string,
 ): Promise<string> {
   LOG.debug("Launching puppeteer...");
   const browser = await puppeteer.launch({ headless: true });
   LOG.debug("Puppeteer launched.");
+  let page: puppeteer.Page | undefined;
+  let context: puppeteer.BrowserContext | undefined;
   try {
-    const context = await browser.createBrowserContext();
-    const page = await context.newPage();
+    context = await browser.createBrowserContext();
+    page = await context.newPage();
 
     LOG.debug("Navigating to login page...");
     await page.goto(LOGIN_URL, { waitUntil: "networkidle2", timeout: 90_000 });
     LOG.debug("Login page loaded.");
     await page.waitForSelector("#eliloUserID", { timeout: 30_000 });
+    if (debugDir) await debugCapture(page, debugDir, "01_navigated");
     LOG.debug("Filling login form...");
     await page.type("#eliloUserID", username);
     await page.type("#eliloPassword", password);
+    if (debugDir) await debugCapture(page, debugDir, "02_filled");
     LOG.debug("Submitting login form...");
     await page.click("#loginSubmit");
     LOG.debug("Login submitted, waiting for navigation...");
     await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 90_000 });
+    if (debugDir) await debugCapture(page, debugDir, "03_submitted");
     LOG.info("Logged in successfully.");
 
     const cookies = await context.cookies();
     const cookieHeader = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; ");
     LOG.debug("Cookies extracted.");
+    if (debugDir) await saveDebugFile(debugDir, "login_cookies", cookies);
     return cookieHeader;
   } catch (error) {
-    LOG.error(`Login failed: ${error}`);
+    LOG.error(`Login failed`, error);
     throw error;
   } finally {
+    if (debugDir && page) {
+      try { await debugCapture(page, debugDir, "04_end"); } catch { /* ignore */ }
+    }
     await browser.close();
   }
 }

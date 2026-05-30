@@ -50,7 +50,7 @@ const runScrapeJob = async (jobId: string, username: string, password: string, d
 
   try {
     LOG.debug(`Job ${jobId}: Logging in...`);
-    const cookies = await loginAmexHongKong(username, password);
+    const cookies = await loginAmexHongKong(username, password, debugDir);
     LOG.debug(`Job ${jobId}: Login successful.`);
 
     jobs.set(jobId, {

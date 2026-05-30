@@ -7,3 +7,9 @@ export const saveDebugFile = async (debugDir: string, name: string, data: unknow
   const content = ext === "json" ? JSON.stringify(data, null, 2) : String(data);
   await writeFile(filePath, content, "utf-8");
 };
+
+export const saveDebugScreenshot = async (debugDir: string, name: string, buffer: Buffer): Promise<void> => {
+  await mkdir(debugDir, { recursive: true });
+  const filePath = join(debugDir, `${name}.png`);
+  await writeFile(filePath, buffer);
+};
