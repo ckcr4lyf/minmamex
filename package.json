@@ -48,8 +48,6 @@
     "@ckcr4lyf/logger": "^0.0.8",
     "cors": "^2.8.5",
     "express": "^5.2.1",
-    "puppeteer": "^24.40.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer": "^24.40.0"
   }
 }
