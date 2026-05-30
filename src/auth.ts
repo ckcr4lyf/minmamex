@@ -26,16 +26,27 @@ export async function loginAmexHongKong(
   debugDir?: string,
 ): Promise<string> {
   LOG.debug("Launching puppeteer...");
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ 
+    headless: true,
+    args: [
+    '--disable-blink-features=AutomationControlled', // CRITICAL: Removes the `navigator.webdriver = true` flag
+    '--window-size=1920,1080',                      // Prevents the default tiny 800x600 bot-like resolution
+    '--start-maximized',                            // Opens the browser fully maximized
+    '--disable-infobars',                           // Hides the "Chrome is being controlled by automated software" notification
+    '--no-sandbox',                                 // Prevents OS-level permission crashes (crucial for Docker/Linux)
+    '--disable-setuid-sandbox'
+  ]
+   });
   LOG.debug("Puppeteer launched.");
   let page: puppeteer.Page | undefined;
   let context: puppeteer.BrowserContext | undefined;
   try {
     context = await browser.createBrowserContext();
     page = await context.newPage();
+    page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36');
 
     LOG.debug("Navigating to login page...");
-    await page.goto(LOGIN_URL, { waitUntil: "networkidle2", timeout: 90_000 });
+    await page.goto(LOGIN_URL, { waitUntil: "networkidle2", timeout: 15_000 });
     LOG.debug("Login page loaded.");
     await page.waitForSelector("#eliloUserID", { timeout: 30_000 });
     if (debugDir) await debugCapture(page, debugDir, "01_navigated");
@@ -46,7 +57,7 @@ export async function loginAmexHongKong(
     LOG.debug("Submitting login form...");
     await page.click("#loginSubmit");
     LOG.debug("Login submitted, waiting for navigation...");
-    await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 90_000 });
+    await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 15_000 });
     if (debugDir) await debugCapture(page, debugDir, "03_submitted");
     LOG.info("Logged in successfully.");
 
