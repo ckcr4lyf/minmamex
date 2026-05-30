@@ -32,14 +32,12 @@ export async function loginAmexHongKong(
 ): Promise<string> {
   LOG.debug("Launching puppeteer...");
   const browser = await puppeteerExtra.launch({ 
-    executablePath: "/usr/bin/chromium",
     headless: true,
     args: [
       '--window-size=1920,1080',
       '--start-maximized',
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--remote-debugging-port=9239',
     ],
    });
   LOG.debug("Puppeteer launched.");
@@ -52,14 +50,11 @@ export async function loginAmexHongKong(
     LOG.debug("Navigating to login page...");
     await page.goto(LOGIN_URL, { waitUntil: "networkidle2", timeout: 15_000 });
     LOG.debug("Login page loaded.");
-    await new Promise(resolve => setTimeout(resolve, 10_000));
     await page.waitForSelector("#eliloUserID", { timeout: 30_000 });
     if (debugDir) await debugCapture(page, debugDir, "01_navigated");
     LOG.debug("Filling login form...");
-    await page.click("#eliloUserID");
-    await page.type("#eliloUserID", username, { delay: 200 + Math.random() * 200 });
-    await page.click("#eliloPassword");
-    await page.type("#eliloPassword", password, { delay: 200 + Math.random() * 200 });
+    await page.type("#eliloUserID", username);
+    await page.type("#eliloPassword", password);
     if (debugDir) await debugCapture(page, debugDir, "02_filled");
     LOG.debug("Submitting login form...");
     await page.click("#loginSubmit");
