@@ -1,6 +1,11 @@
 import puppeteer from "puppeteer";
+import { addExtra } from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { getLogger } from "./logger.js";
 import { saveDebugFile, saveDebugScreenshot } from "./debug.js";
+
+const puppeteerExtra = addExtra(puppeteer as unknown as import("puppeteer-extra").VanillaPuppeteer);
+puppeteerExtra.use(StealthPlugin());
 
 const LOG = getLogger();
 const LOGIN_URL =
@@ -26,16 +31,14 @@ export async function loginAmexHongKong(
   debugDir?: string,
 ): Promise<string> {
   LOG.debug("Launching puppeteer...");
-  const browser = await puppeteer.launch({ 
+  const browser = await puppeteerExtra.launch({ 
     headless: true,
     args: [
-    '--disable-blink-features=AutomationControlled', // CRITICAL: Removes the `navigator.webdriver = true` flag
-    '--window-size=1920,1080',                      // Prevents the default tiny 800x600 bot-like resolution
-    '--start-maximized',                            // Opens the browser fully maximized
-    '--disable-infobars',                           // Hides the "Chrome is being controlled by automated software" notification
-    '--no-sandbox',                                 // Prevents OS-level permission crashes (crucial for Docker/Linux)
-    '--disable-setuid-sandbox'
-  ]
+      '--window-size=1920,1080',
+      '--start-maximized',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
    });
   LOG.debug("Puppeteer launched.");
   let page: puppeteer.Page | undefined;
@@ -43,7 +46,6 @@ export async function loginAmexHongKong(
   try {
     context = await browser.createBrowserContext();
     page = await context.newPage();
-    page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36');
 
     LOG.debug("Navigating to login page...");
     await page.goto(LOGIN_URL, { waitUntil: "networkidle2", timeout: 15_000 });
