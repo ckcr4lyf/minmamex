@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import { getLogger } from "./logger.js";
 import { saveDebugFile, saveDebugScreenshot } from "./debug.js";
+import { findChromium } from "./chromium.js";
 
 const LOG = getLogger();
 const LOGIN_URL =
@@ -27,6 +28,7 @@ export async function loginAmexHongKong(
 ): Promise<string> {
   LOG.debug("Launching puppeteer...");
   const browser = await puppeteer.launch({ 
+    executablePath: findChromium(),
     headless: true,
     args: [
     '--disable-blink-features=AutomationControlled', // CRITICAL: Removes the `navigator.webdriver = true` flag
