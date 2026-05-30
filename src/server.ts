@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { createServer } from "node:https";
 import express from "express";
 import cors from "cors";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { getAccountsList, getAllLoyaltyTransactionsForAccounts } from "./api.js";
 import { loginAmexHongKong } from "./auth.js";
@@ -10,6 +10,7 @@ import { getLogger } from "./logger.js";
 import { Job, JobStatus } from "./db.js";
 import { getQuarterlySummary } from "./utils.js";
 import { checkRateLimit, getQuota } from "./quota.js";
+import { ulid } from "./ulid.js";
 
 const LOG = getLogger();
 
@@ -123,7 +124,7 @@ app.post("/scrape_rewards", (req, res) => {
     return;
   }
 
-  const id = randomUUID();
+  const id = ulid();
   const secret = randomBytes(32).toString("hex");
   const job: Job = {
     id,
