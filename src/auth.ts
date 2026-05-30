@@ -15,7 +15,7 @@ const LOGIN_URL =
 const REQUIRED_COOKIES = ["amexsessioncookie", "aat"] as const;
 
 const debugCapture = async (page: puppeteer.Page, debugDir: string, step: string) => {
-  const screenshot = await page.screenshot({ fullPage: true });
+  const screenshot = await page.screenshot();
   await saveDebugScreenshot(debugDir, `login_${step}`, Buffer.from(screenshot));
   const html = await page.content();
   await saveDebugFile(debugDir, `login_${step}`, html, "html");
