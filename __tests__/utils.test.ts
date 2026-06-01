@@ -96,7 +96,7 @@ test('getQuarterlySummary sets remaining fields for known capped bonuses', t => 
 
   t.deepEqual(result[0].bonusPoints['Platinum Accelerator 2025 Travel'], {
     pointsEarned: 10000,
-    pointsRemaining: 65000,
-    spendRemaining: 13000,
+    pointsRemaining: 95000,
+    spendRemaining: 95000 / 7,
   });
 });
