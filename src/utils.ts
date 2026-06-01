@@ -39,6 +39,9 @@ const KNOWN_MAX_BONUS: Record<string, MaxBonus> = {
     maxBonus: 70000,
     rate: 7,
   },
+  // reference: https://www.americanexpress.com/en-hk/benefits/offers/shopping/platinum-membership-rewards-accelerator/
+  // travel & everyday: 7x upto $15k
+  // fx: 5x upto $15k
   "Platinum Accelerator 2025 Travel": {
     maxBonus: 105000,
     rate: 7,
