@@ -40,12 +40,12 @@ const KNOWN_MAX_BONUS: Record<string, MaxBonus> = {
     rate: 7,
   },
   "Platinum Accelerator 2025 Travel": {
-    maxBonus: 75000,
-    rate: 5,
-  },
-  "Platinum Accelerator 2025 Foreign Currency": {
     maxBonus: 105000,
     rate: 7,
+  },
+  "Platinum Accelerator 2025 Foreign Currency": {
+    maxBonus: 75000,
+    rate: 5,
   },
   "Platinum Accelerator 2025 Everyday Spend": {
     maxBonus: 105000,
