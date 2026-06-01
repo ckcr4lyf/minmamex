@@ -12,9 +12,14 @@ const encodeTime = (time: number, length: number): string => {
 };
 
 const encodeRandom = (bytes: Uint8Array, length: number): string => {
+  let num = 0n;
+  for (const byte of bytes) {
+    num = (num << 8n) | BigInt(byte);
+  }
   let str = "";
   for (let i = 0; i < length; i++) {
-    str += ENCODING.charAt(bytes[i] % 32);
+    str = ENCODING.charAt(Number(num % 32n)) + str;
+    num = num / 32n;
   }
   return str;
 };
